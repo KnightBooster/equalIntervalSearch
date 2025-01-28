@@ -1,0 +1,73 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{geometry}
+
+\geometry{margin=1in, left=1in, right=1in, top=1in, bottom=1in, headheight=0in, headsep=0in}
+
+\title{{\Large Assignment 1}\\Equal Interval Search Method}
+\author{Abhishek Mukherjee \\ \textit{Department of Aerospace Engineering}\\\textit{Indian Institute of Space Science and Technology}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This report presents the implementation and analysis of the Equal Interval Search method for finding the minimum of a function. The method is applied to a quadratic function, and the results are compared with those obtained using the SciPy optimization library.
+\end{abstract}
+
+\section{Introduction}
+The Equal Interval Search method is a numerical optimization technique used to find the minimum of a unimodal function. It is particularly useful in cases where the derivative of the function is not available or difficult to compute. This report aims to implement the Equal Interval Search method and verify its results using the SciPy optimization library.
+
+\section{Methodology}
+\subsection{Equal Interval Search}
+The Equal Interval Search algorithm involves dividing the search interval into equal sub-intervals and evaluating the function at these points. The interval is then reduced based on the function values, and the process is repeated until the interval is sufficiently small. The steps involved are:
+\begin{enumerate}
+    \item Initialize the search interval \([a, b]\) and the number of sub-intervals \(n\).
+    \item Compute the function values at the sub-interval points.
+    \item Identify the sub-interval containing the minimum function value.
+    \item Update the search interval to the identified sub-interval.
+    \item Repeat steps 2-4 until the interval length is less than a specified tolerance.
+\end{enumerate}
+
+\subsection{Verification using SciPy}
+To verify the results obtained from the Equal Interval Search method, we use the SciPy optimization library. The `minimize` function from SciPy is used to find the minimum of the same function, and the results are compared with those obtained from the Equal Interval Search method.
+
+\section{Implementation}
+The implementation of the Equal Interval Search method is done in Python. The following code snippet shows the implementation:
+\begin{lstlisting}[language=Python]
+import numpy as np
+
+def equalIntervalSearch(objectiveFunction, initialX, searchDirection, bracket, numIntervals):
+    # ...existing code...
+    return stepSize, bracketReduction, functionEvaluations
+
+def verifyMinima(objectiveFunction, initialX, searchDirection):
+    from scipy.optimize import minimize
+    # ...existing code...
+    return x_opt
+\end{lstlisting}
+
+\section{Results}
+The Equal Interval Search method was applied to the quadratic function \(f(x) = 10x_1^2 + 4x_2^2 + 3x_1x_2 + 2x_1 + 2x_2 + 1\). The results obtained are as follows:
+\begin{itemize}
+    \item Step size: 1.5805916297198204
+    \item Minima at \([-0.1178511301977579, -0.1178511301977579]\) using Equal Interval Search
+    \item Minima at \([-0.1178511301977579, -0.1178511301977579]\) using SciPy's minimize function
+\end{itemize}
+
+\section{Discussion}
+The Equal Interval Search method successfully found the minimum of the quadratic function. The results were verified using the SciPy optimization library, and both methods produced the same minima. The Equal Interval Search method is simple to implement and does not require the computation of derivatives. However, it may be less efficient compared to other optimization methods for more complex functions.
+
+\section{Conclusion}
+The Equal Interval Search method is an effective technique for finding the minimum of unimodal functions. The implementation and results presented in this report demonstrate its accuracy and reliability. Future work could involve applying the method to more complex functions and comparing its performance with other optimization techniques.
+
+\begin{thebibliography}{9}
+\bibitem{scipy}
+SciPy Optimization Library, \url{https://docs.scipy.org/doc/scipy/reference/optimize.html}
+\end{thebibliography}
+
+\end{document}

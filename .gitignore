@@ -1,0 +1,19 @@
+__pycache__/
+.vscode/
+
+# LaTeX Intermediate Files
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.fls
+*.fdb_latexmk
+*.pdf
+*.dvi
+*.xdv
+*.synctex(busy)
+*.synctex
+*.synctex.gz(busy)
