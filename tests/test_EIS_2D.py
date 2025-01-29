@@ -18,5 +18,12 @@ class TestEqualIntervalSearch(unittest.TestCase):
         stepSize, bracketReduction, functionEvaluations = EIS_2D.equalIntervalSearch(self.function, self.initialX, self.searchDirection, self.bracket, self.numIntervals, printBracket=False)
         self.assertAlmostEqual(stepSize, 1.5805916297198204, places=8)
 
+    def test_compare_with_scipy(self):
+        stepSize, _, _ = EIS_2D.equalIntervalSearch(self.function, self.initialX, self.searchDirection, self.bracket, self.numIntervals, printBracket=False)
+        x1, x2 = self.initialX[0] + (stepSize * self.searchDirection[0]), self.initialX[1] + (stepSize * self.searchDirection[1])
+        x_opt = EIS_2D.verifyMinima(self.function, self.initialX, self.searchDirection)
+        self.assertAlmostEqual(x1, x_opt[0], places=6)
+        self.assertAlmostEqual(x2, x_opt[1], places=6)
+
 if __name__ == "__main__":
     unittest.main()

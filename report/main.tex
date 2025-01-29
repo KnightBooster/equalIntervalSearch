@@ -1,73 +1,212 @@
-\documentclass[11pt]{article}
-\usepackage{amsmath}
+\documentclass[11pt,a4paper]{article}
+
 \usepackage{graphicx}
 \usepackage{listings}
-\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{indentfirst}
+\usepackage{bm}
+\usepackage{xcolor}
 \usepackage{geometry}
+\usepackage[fleqn]{amsmath}
+\usepackage{natbib}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
 
-\geometry{margin=1in, left=1in, right=1in, top=1in, bottom=1in, headheight=0in, headsep=0in}
+\geometry{a4paper, total={170mm,257mm}, left=20mm, top=20mm}
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
 
-\title{{\Large Assignment 1}\\Equal Interval Search Method}
-\author{Abhishek Mukherjee \\ \textit{Department of Aerospace Engineering}\\\textit{Indian Institute of Space Science and Technology}}
+\title{{\Large (AE 720) Multi-disciplinary Design Optimization} \\ \textbf{Equal Interval Search Method for Unimodal Function Optimization}} 
+\author{Abhishek Mukherjee (SC24M001) \\ \textit{M. Tech in Aerodynamics and Flight Mechanics}}
 \date{\today}
+
+\definecolor{commentsColor}{rgb}{0.0, 0.5, 0.0}
+\definecolor{stringColor}{rgb}{0.58, 0.0, 0.82}
+\definecolor{keywordsColor}{rgb}{0.0, 0.0, 0.8}
+\definecolor{backcolour}{rgb}{0.98, 0.98, 0.98}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},      
+    basicstyle=\ttfamily\footnotesize,  
+    breakatwhitespace=false,            
+    breaklines=true,                    
+    captionpos=false,                   
+    commentstyle=\color{commentsColor}\textit,    
+    extendedchars=true,                 
+    frame=none,	                   	    
+    keepspaces=true,                    
+    keywordstyle=\color{keywordsColor}\bfseries,       
+    language=Python,                    
+    numbers=none,                       
+    numbersep=5pt,                      
+    numberstyle=\tiny\color{commentsColor}, 
+    rulecolor=\color{black},            
+    showspaces=false,                   
+    showstringspaces=false,             
+    showtabs=false,                     
+    stepnumber=1,                       
+    stringstyle=\color{stringColor},    
+    tabsize=2,	                        
+    title=\lstname,                     
+    columns=fixed
+}
+
+\lstset{style=mystyle}
+
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyhead[L]{\textit{Indian Institute of Space Science and Technology}}
+    \fancyhead[R]{\textit{Department of Aerospace Engineering}}
+    \fancyfoot[C]{\thepage}
+    \renewcommand{\headrulewidth}{0.4pt}
+    \renewcommand{\footrulewidth}{0.4pt}
+}
+
+\pagestyle{plain}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-This report presents the implementation and analysis of the Equal Interval Search method for finding the minimum of a function. The method is applied to a quadratic function, and the results are compared with those obtained using the SciPy optimization library.
+    This report presents the implementation and analysis of the Equal Interval Search method, a numerical optimization technique used to find the minimum of a unimodal function. The method is particularly useful when the derivative of the function is not available or difficult to compute. The Equal Interval Search algorithm is applied to a quadratic function, and the results are compared with those obtained using the SciPy optimization library. The performance of the method is evaluated in terms of accuracy and computational efficiency.
 \end{abstract}
 
 \section{Introduction}
-The Equal Interval Search method is a numerical optimization technique used to find the minimum of a unimodal function. It is particularly useful in cases where the derivative of the function is not available or difficult to compute. This report aims to implement the Equal Interval Search method and verify its results using the SciPy optimization library.
+    The Equal Interval Search method is a numerical optimization technique used to find the minimum of a unimodal function. It is particularly useful in cases where the derivative of the function is not available or difficult to compute. This report aims to implement the Equal Interval Search method and verify its results using the SciPy optimization library. The methodology and concepts are based on the principles discussed in \citet{ganguly2012engineering}.
 
-\section{Methodology}
-\subsection{Equal Interval Search}
-The Equal Interval Search algorithm involves dividing the search interval into equal sub-intervals and evaluating the function at these points. The interval is then reduced based on the function values, and the process is repeated until the interval is sufficiently small. The steps involved are:
+\subsection{Equal Interval Search Algorithm}
+For a given objective function \(f(\bar{x})\), the goal is to find the minimum value of the function in a given search direction given by \(\hat{d}\), while starting the search from an initial point \(\bar{x_0}\). The multi-dimensional search problem is then deduced to a one-dimensional line search problem by expressing the design variables as –
+\begin{equation}
+    \bar{x} = \bar{x_0} + \alpha \hat{d}
+\end{equation}
+
+where \(\alpha\) is the step size. The objective function along the search direction is given by –
+\begin{equation}
+    f(\alpha) = f(\bar{x_0} + \alpha d)    
+\end{equation}
+
+Now, the problem is to find the minimum of the scalar-input function \(f(\alpha)\) in the interval \([0, b]\), where \(b\) is the upper bound of the search interval. The Equal Interval Search algorithm involves dividing the search interval into equal sub-intervals and evaluating the function at these specified grid points. The interval is then reduced based on the trend of the function values within the sub-intervals. The process is repeated until the interval length is less than a specified tolerance. The steps involved in the Equal Interval Search algorithm are as follows:
+
 \begin{enumerate}
-    \item Initialize the search interval \([a, b]\) and the number of sub-intervals \(n\).
-    \item Compute the function values at the sub-interval points.
-    \item Identify the sub-interval containing the minimum function value.
-    \item Update the search interval to the identified sub-interval.
-    \item Repeat steps 2-4 until the interval length is less than a specified tolerance.
+    \item Initialize the search interval for the stepsize \(\alpha = [a, b]\) and the number of sub-intervals to be \(n\).
+    \item Compute the function values at two successive points in the search interval.
+    \item Check whether the function value at \(\alpha_i\) is less than the function value at \(\alpha_{i+1}\).
+    \item \begin{enumerate}
+        \item If the function value at \(\alpha_i\) is less than the function value at \(\alpha_{i+1}\), update the search interval to \([\alpha_{i-1}, \alpha_{i+1}]\).
+        \item If the function value at \(\alpha_i\) is greater than the function value at \(\alpha_{i+1}\), keep searching in the interval until the criteria in step 4a is met.
+    \end{enumerate}
+    \item Repeat steps 2–4 until the interval length is less than a specified tolerance.
 \end{enumerate}
 
+Mathematically, the interval \([a, b]\) is divided into \(n\) equal sub-intervals:
+\[
+\alpha_i = a + i \frac{b - a}{n}, \quad i = 0, 1, \ldots, n
+\]
+The function values at these points are evaluated, and the interval is updated based on the minimum function value.
+
+Once the interval bracket is minimized to a specified tolerance, the minimum of the function is obtained at the midpoint of the interval:
+\[
+\alpha_{\text{min}} = \frac{a + b}{2}
+\]
+
+\subsection{Gradient Calculation}
+It is important to verify whether the search direction is accuracy a descent direction. To determine if a given search direction is a descent direction, the gradient of the function is calculated using finite differences:
+\[
+\frac{\partial f}{\partial x_i} \approx \frac{f(x_i + h) - f(x_i)}{h}
+\]
+where \(h\) is a small step size. The search direction is a descent direction if the dot product of the gradient and the search direction is negative:
+\[
+\nabla f \cdot d < 0
+\]
+
 \subsection{Verification using SciPy}
-To verify the results obtained from the Equal Interval Search method, we use the SciPy optimization library. The `minimize` function from SciPy is used to find the minimum of the same function, and the results are compared with those obtained from the Equal Interval Search method.
+To verify the results obtained from the Equal Interval Search method, we use the SciPy optimization library. The `minimize' function from SciPy is
+based on `Nedler-Mead' method (also known as the Downhill Simplex Method) which is a numerical method used to find the minimum or maximum of an objective function in a multidimensional space. The function is used to find the minimum of the objective function, from the same initial design point, and in the same search direction and the results are compared with those obtained from the Equal Interval Search method.
 
 \section{Implementation}
 The implementation of the Equal Interval Search method is done in Python. The following code snippet shows the implementation:
+
+\subsection{Check Descent Direction}
+The function `isDescentDirection' is used to verify if the search direction is a descent direction. The function takes the callable opjective function, the search direction, and the initial design point as inputs and return a boolean value indicating whether the search direction is a descent direction or not.
+
 \begin{lstlisting}[language=Python]
-import numpy as np
+def isDescentDirection(function: callable, searchDirection, initialX):
+h = 1e-5
+grad_f = np.zeros(len(initialX))
+for i in range(len(initialX)):
+    x = initialX.copy()
+    x[i] += h
+    grad_f[i] = (function(x) - function(initialX)) / h
 
-def equalIntervalSearch(objectiveFunction, initialX, searchDirection, bracket, numIntervals):
-    # ...existing code...
+return np.dot(grad_f, searchDirection) < 0
+\end{lstlisting}
+
+\subsection{Equal Interval Search}
+The function `equalIntervalSearch' implements the Equal Interval Search algorithm. The function takes the callable objective function, the search direction, the initial design point, the lower bound of the search interval, the upper bound of the search interval, the number of sub-intervals, and the tolerance as inputs and returns the minimum of the function. The function also prints the bracket after each interval reduction if the `printBracket' flag is set to True. Tolerance is set to \(10^{-15}\) by default.
+
+\begin{lstlisting}[language=Python]
+    def equalIntervalSearch(objectiveFunction: callable, initialX: list, searchDirection: list, bracket: list, numIntervals: int, printBracket: bool = True) -> tuple:
+    bracketReduction = 0
+    functionEvaluations = 0
+    TOLERANCE = 1e-15
+
+    if not isDescentDirection(objectiveFunction, searchDirection, initialX):
+        raise ValueError("The search direction is not a descent direction")
+    
+    while abs(bracket[1] - bracket[0]) > TOLERANCE:
+        alpha = np.linspace(bracket[0], bracket[1], numIntervals, endpoint=True)
+
+        x1 = initialX[0] + (alpha[0] * searchDirection[0])
+        x2 = initialX[1] + (alpha[0] * searchDirection[1])
+        fCurr = objectiveFunction([x1, x2])
+
+        functionEvaluations += 1
+
+        for i in range(0, numIntervals-1):
+            x1 = initialX[0] + (alpha[i + 1] * searchDirection[0])
+            x2 = initialX[1] + (alpha[i + 1] * searchDirection[1])
+
+            fNext = objectiveFunction([x1, x2])
+            functionEvaluations += 1
+
+            if fCurr < fNext:
+                bracket = [alpha[i - 1], alpha[i + 1]]
+                bracketReduction += 1
+
+                if printBracket:
+                    print(f"Bracket after {bracketReduction:02} interval reductions: [{bracket[0]:.16f}, {bracket[1]:.16f}]")
+                break
+
+            fCurr = fNext
+
+    stepSize = (bracket[1] + bracket[0]) / 2
+
     return stepSize, bracketReduction, functionEvaluations
-
-def verifyMinima(objectiveFunction, initialX, searchDirection):
-    from scipy.optimize import minimize
-    # ...existing code...
-    return x_opt
 \end{lstlisting}
 
 \section{Results}
-The Equal Interval Search method was applied to the quadratic function \(f(x) = 10x_1^2 + 4x_2^2 + 3x_1x_2 + 2x_1 + 2x_2 + 1\). The results obtained are as follows:
+The Equal Interval Search method was applied to the following second-order function – 
+\begin{equation}
+    f(x_1, x_2) = 10x_1^2 + 4x_2^2 + 3x_1x_2 + 2x_1 + 2x_2 + 1
+\end{equation}
+
+The search direction was set to \(\left[\dfrac{-7}{\sqrt{53}}, \dfrac{-2}{\sqrt{53}}\right]\), and the initial design point was \([1, 1]\). The search interval was set to \([0, 5]\) with the number of sub-intervals being set to 10. The results obtained from the Equal Interval Search method were compared with the results obtained using the SciPy optimization library. The results obtained are as follows:
 \begin{itemize}
-    \item Step size: 1.5805916297198204
-    \item Minima at \([-0.1178511301977579, -0.1178511301977579]\) using Equal Interval Search
-    \item Minima at \([-0.1178511301977579, -0.1178511301977579]\) using SciPy's minimize function
+    \item[-] Step size: 1.3351296407280311
+    \item[-] Minima at \([-0.2837591227650904, 0.6332116792099741]\) using Equal Interval Search
+    \item[-] Minima at \([-0.2837591200176730, 0.6332116799949505]\) using SciPy's minimize function
+    \item[-] Number of function evaluations: 102
+    \item[-] Number of Bracket Reducing Iterations: 16
 \end{itemize}
 
 \section{Discussion}
-The Equal Interval Search method successfully found the minimum of the quadratic function. The results were verified using the SciPy optimization library, and both methods produced the same minima. The Equal Interval Search method is simple to implement and does not require the computation of derivatives. However, it may be less efficient compared to other optimization methods for more complex functions.
+The Equal Interval Search method accurately estimated the minimum of the quadratic function to 15 decimal places. The results were validated using the SciPy optimization library, with both methods yielding the same minima, consistent up to 8 decimal places. The Equal Interval Search method is straightforward to implement and does not necessitate the computation of derivatives. However, it may be less efficient for more complex functions due to the requirement for numerous function evaluations. 
 
 \section{Conclusion}
-The Equal Interval Search method is an effective technique for finding the minimum of unimodal functions. The implementation and results presented in this report demonstrate its accuracy and reliability. Future work could involve applying the method to more complex functions and comparing its performance with other optimization techniques.
+The Equal Interval Search method has proven to be an effective technique for identifying the minimum of unimodal functions. This method was successfully implemented and validated using a quadratic function, with results that were consistent with those obtained via the SciPy optimization library. The Equal Interval Search method is particularly valuable for optimization problems where the derivative of the objective function is either unavailable or challenging to compute. It is especially advantageous for unimodal functions where the minimum is known to reside within a specified interval. However, for multimodal functions, the method may converge to a local minimum rather than the global minimum.
 
-\begin{thebibliography}{9}
-\bibitem{scipy}
-SciPy Optimization Library, \url{https://docs.scipy.org/doc/scipy/reference/optimize.html}
-\end{thebibliography}
+\bibliographystyle{plainnat}
+\bibliography{references}
 
 \end{document}
